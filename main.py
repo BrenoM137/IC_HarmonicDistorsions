@@ -1,6 +1,8 @@
 import math
 import numpy as np
 import cmath
+from sklearn.decomposition import PCA, FastICA
+from sklearn.preprocessing import StandardScaler
 
 def new_bar(matriz):
     #cria barras. [tipo de barra(0), capacitância(1), tensão(2), angulo(3), potência ativa(4), potência reativa(5), existe carga?(6),retância positiva(7), tensão base(8), strafo(9)]
@@ -34,7 +36,6 @@ def new_bar(matriz):
                 bar = [bartype,c,v,0,p,0,carga, gerador, vb, st]
             else:
                 bar = [bartype,c,v,0,-p,0,carga, gerador, vb, st]
-
         else:
             if bartype == 3:
                 p = float(input("Insira a potência ativa liberada (pu): "))
@@ -63,18 +64,6 @@ def new_connect(y, frombar, tobar,bars, connections):
 
     y[frombar-1][frombar-1] += 1/z + (b*1j)/2
     y[tobar-1][tobar-1] += 1/z + (b*1j)/2   
-
-
-
-#def soma_shunt(y, bars):
-    #soma elemento shunt das barras
-    #for i in range(len(bars)):
-        #if(bars[i][1] != 0):
-            #y[i][i] += ((1j*bars[i][1])/(bars[i][2]*bars[i][2]))
-            #y[i][i] += -(bars[i][2]*bars[i][2])/(bars[i][1]*1j)
-            #y[i][i] += (bars[i][1])
-            #y[i][i] += 1/(1/((1j)*2*60*math.pi*(bars[i][2]/bars[i][1])))
-
 
 def soma_shunt(y, bars):
     #soma elemento shunt das barras
