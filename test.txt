@@ -1,7 +1,6 @@
-================================================ SISTEMAS TESTE ================================================
+================================================ CPH TEST SYSTEMS ================================================
 
-
-Sistema do vídeo:
+SIMPLE 3 BARS SYSTEM:
 
 3
 3
@@ -31,7 +30,7 @@ Sistema do vídeo:
 0.02
 -1
 
-Sistema das 3 barras:
+3 CONNECTED BARS SYSTEM:
 
 3
 1
@@ -65,7 +64,7 @@ Sistema das 3 barras:
 0.2
 0.01
 
-Corrente harmônica:
+3 BARS SYSTEM WITH HARMONIC DISTORSION:
 
 3
 1
@@ -121,7 +120,7 @@ Corrente harmônica:
 -96
 -1
 
-Corrente harmônica sem carga:
+3 BARS SYSTEM WITH HARMONIC DISTORSION NO CHARGE:
 
 3
 1
