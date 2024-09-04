@@ -116,7 +116,6 @@ def create_x(bars, Y, qnt):
                 if Y[i1][i2] != 0:
                     dP += bars[i2][2] * (Y[i1][i2].real * math.cos(bars[i1][3] - bars[i2][3]) + Y[i1][i2].imag * math.sin(bars[i1][3] - bars[i2][3]))
             
-
             x[i] = bars[i1][4] - (bars[i1][2] * dP)
             i += 1
 
