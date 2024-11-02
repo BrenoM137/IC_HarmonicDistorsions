@@ -2,8 +2,6 @@
 
 This repository contains the development of a software tool designed for analyzing and calculating harmonic flows and potential distortions in electrical systems. The project is divided into two distinct phases, each with specific objectives and advancements, but both focusing on power quality and harmonic distortion management.
 
-## Development of a Program for Harmonic Flow Calculation
-
 ### Description
 
 The first phase of the project focused on creating a software tool for calculating power flow and harmonic flow in electrical networks. The motivation for this phase was the increase in harmonic distortions due to the growing use of nonlinear devices in modern electrical grids.
