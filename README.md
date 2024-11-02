@@ -13,16 +13,6 @@ This repository contains the development of a software tool designed for analyzi
 
 3. **Execution:** Use the scripts in the `main.py` file to calculate power and harmonic flow. Refer to the README within that directory for specific usage details.
 
-## Contributing
-
-If you wish to contribute to the project, please follow these steps:
-
-1. Fork this repository.
-2. Create a new branch for your changes (`git checkout -b my-contribution`).
-3. Commit your changes (`git commit -am 'Add new feature'`).
-4. Push your branch to the repository (`git push origin my-contribution`).
-5. Open a pull request with a clear description of your changes.
-
 ## License
 
 This project is licensed under the MIT License. See the `LICENSE` file for more details.
