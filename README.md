@@ -1,6 +1,6 @@
 # Harmonic Flow Calculation and Power Quality Analysis Software
 
-This repository contains the development of a software tool designed for analyzing and calculating harmonic flows and potential distortions in electrical systems. The project is divided into two distinct phases, each with specific objectives and advancements, but both focusing on power quality and harmonic distortion management.
+This repository contains the development of a software tool designed for analyzing and calculating the sharing of responsibilities for harmonic distortions and analyzing harmonic flows. This project was developed as part of my scientific initiation under the guidance of Professor Andréia Crico dos Santos at IFTM (Instituto Federal do Triângulo Mineiro) in Brazil, Uberaba.
 
 ### Description
 
