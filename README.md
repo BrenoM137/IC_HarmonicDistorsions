@@ -1,15 +1,6 @@
 # Harmonic Flow Calculation and Power Quality Analysis Software
 
-This repository contains the development of a software tool designed for analyzing and calculating the sharing of responsibilities for harmonic distortions and analyzing harmonic flows. This project was developed as part of my scientific initiation under the guidance of Professor Andréia Crico dos Santos at IFTM (Instituto Federal do Triângulo Mineiro) in Brazil, Uberaba.
-
-### Description
-
-The first phase of the project focused on creating a software tool for calculating power flow and harmonic flow in electrical networks. The motivation for this phase was the increase in harmonic distortions due to the growing use of nonlinear devices in modern electrical grids.
-
-**Objectives:**
-
-- Implement harmonic flow calculation to provide a comprehensive analysis of operation in both fundamental and harmonic frequencies.
-- Lay the groundwork for studying and analyzing harmonic responsibility sharing among different agents and consumers.
+This repository contains the development of a software tool designed for analyzing and calculating the sharing of responsibilities for harmonic distortions and analyzing harmonic flows, with the objective to lay the groundwork for studying and analyzing harmonic responsibility sharing among different agents and consumers. This project was developed as part of my scientific initiation under the guidance of Professor Andréia Crico dos Santos at IFTM (Instituto Federal do Triângulo Mineiro) in Brazil, Uberaba.
 
 ### Usage
 
