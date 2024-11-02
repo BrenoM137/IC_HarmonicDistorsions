@@ -1,8 +1,6 @@
 import math
 import numpy as np
 import cmath
-from sklearn.decomposition import PCA, FastICA
-from sklearn.preprocessing import StandardScaler
 
 def new_bar(matriz):
     #cria barras. [tipo de barra(0), capacitância(1), tensão(2), angulo(3), potência ativa(4), potência reativa(5), existe carga?(6),retância positiva(7), tensão base(8), strafo(9)]
@@ -473,11 +471,6 @@ def correct_y(connections, barsqnt, h,bars):
 
         if(bars[i][1] > 0):
             y[i][i] += (bars[i][1]*1j*h)
-            #y[i][i] += -(bars[i][2]*bars[i][2])/(bars[i][1]*1j*h)
-            #y[i][i] += -((1j*bars[i][1]*h)/(bars[i][2]*bars[i][2]))
-    
-    #if(h == 3):
-        #print(y)
     
     return y
 
@@ -601,7 +594,7 @@ def compartilha(y,bars, connections, currents, vh):
     impedancias = calc_impedancias(PAC,bars,5,connections)
 
     #improviso
-    impedancias = (cmath.rect(5.9478,(89.5998*(math.pi/180))),cmath.rect(62.5424,(-4.3393*(math.pi/180))),cmath.rect(51.2691,(-4.9947*(math.pi/180))),cmath.rect(83.2596,(-21.6006*(math.pi/180))))
+    #impedancias = (cmath.rect(5.9478,(89.5998*(math.pi/180))),cmath.rect(62.5424,(-4.3393*(math.pi/180))),cmath.rect(51.2691,(-4.9947*(math.pi/180))),cmath.rect(83.2596,(-21.6006*(math.pi/180))))
     print(impedancias)
     flag = 0
     # i = 0 flag = 0: zsh += 1/impedancias[0] flag = 1
@@ -622,44 +615,28 @@ def compartilha(y,bars, connections, currents, vh):
     
     print("Zch: ",abs(zch))
     zsh = 1/zsh
-    #zsh = 1.155864 + 5.945482j
-    #zsh = zsh/19.044
-    #zch = zch/19.044
+
     print("Zsh: ",abs(zsh))
     print("Zch 19.044: ",abs(zch)*19.044)
-    #zch = complex(62.3631,-4.7322)
-    #zsh = complex(1.1657,5.9440)
+
     #trocar 0 para h no final
     print("vh[0][PAC]:",vh[0][PAC])
     print("vh[0][c]:",vh[0][c])
 
     vc = complex(vh[0][c].real*-1,vh[0][c].imag)
     vpac =  0.00501242+0.032241j
-    #ipac = ((vpac - ((vh[0][c]*13800))/math.sqrt(3))/zsh)/math.sqrt(3)
+
     ipac = ((vpac - ((vc)))/calc_impedancias_trans(PAC, c ,connections, 5)[0])
     ipac = ipac*418.3698
-    #ipac = 0.0564415859975+0.0350785718963j
-    vpac = (vpac * 13800)
 
-    #print("Defasar 30: ", abs(defasar_30(vpac)), cmath.phase(defasar_30(vpac)))
+    vpac = (vpac * 13800)
+    
     ipac = defasar_30(ipac)
     vpac = defasar_30(vpac)
     vpac = vpac/math.sqrt(3)
     vpac = (cmath.rect(264.2867,(128.3914*(math.pi/180))))
-    #ipac = -17.52 - 0.434j
-    #vpac = -93.853 + 242.431j
-    #ipac = ipac/math.sqrt(3)
-    #ipac = (ipac * ((10000000)/(13800*np.sqrt(3))))/math.sqrt(3)
     ish = (((vpac)/zsh) + ipac)
     ich = (((vpac)/zch) - ipac)
-    #ish = defasar_30(ish)
-    #ich = defasar_30(ich)
-    #ish = 13.482 + 23.453j
-    #ich = 11.995 + 12.823j
-    #zsh = (zsh*19.044)
-    #zch = (zch*19.044)
-    #ish = (ish*418.3698)
-    #ich = (ich*418.3698)
 
     vspach = ((zsh*zch)/(zsh+zch))*ish
 
@@ -667,15 +644,12 @@ def compartilha(y,bars, connections, currents, vh):
     print("ish: ",abs(ish),cmath.phase(ish)*(180/math.pi) ," -> ",ish)
     print("ich: ",abs(ich),cmath.phase(ich)*(180/math.pi)," -> ",ich)
     print("ipac: ",abs(ipac),cmath.phase(ipac)*(180/math.pi)," -> ",ipac)
-    #print("zch: ",abs(zch)*((380*380)/10000000)," -> ",zch)
     print("zsh: ",abs(zsh),cmath.phase(zsh)*(180/math.pi)," -> ",zsh)
     print("zch: ",abs(zch),cmath.phase(zch)*(180/math.pi)," -> ",zch)
-    #print("zsh: ",abs(zsh)*((13800*13800)/10000000)," -> ",zsh)
     print("Vspah:",abs(vspach),cmath.phase(vspach)*(180/math.pi)," -> ",vspach)
     print("Vcpah:",abs(vcpach),cmath.phase(vcpach)*(180/math.pi)," -> ",vcpach)
-    #print("Vspah + Vcpah:",(vspach+vcpach))
+    
     print("Vpac:",abs(vpac),cmath.phase(vpac)*(180/math.pi)," -> ",vpac)
-    #print("\nVpac (V),polar:",cmath.polar(vpac*13800))
     vs_proj = projection_complex(vspach,vpac)
     vc_proj = projection_complex(vcpach,vpac)
     print("\nVs_proj:",abs(vs_proj))
@@ -684,11 +658,6 @@ def compartilha(y,bars, connections, currents, vh):
     print("\nResp. Sitema:",(abs(vs_proj)/abs(vpac))*100)
     print("\nResp. Barra",c+1,":",(abs(vc_proj)/abs(vpac))*100)
     
-    #zsh2 = (cmath.rect(6.0572,(78.9041*(math.pi/180))))
-    #ipac2 = (cmath.rect(17.7580,(-146.8184*(math.pi/180))))
-    #print("ISH: ", abs((((vpac)/zsh) + ipac)), cmath.phase((((vpac)/zsh) + ipac))*(180/math.pi))
-    #print("meu vpac: ", abs(vpac), cmath.phase(vpac)*(180/math.pi))
-    #print("seu vpac: ", abs(vpac2), cmath.phase(vpac2)*(180/math.pi))
     
 #CÓDIGO
 
@@ -723,18 +692,12 @@ while(frombar != -1):
         tobar = int(input("Para barra: "))
         new_connect(y,frombar,tobar,bars, connections)
 print(connections)
-#print(y)
 soma_shunt(y,bars)   
-#print("Connections: ",connections)
-#bars[0][3] = -0.0487
-#bars[2][3] = 0.1606
-#bars[0][2] = 1.0329
 e = pow(10,-15)
-#print(create_jacob(bars,y))
-#print(y)
+
 NewtonRhapson(y,bars,barsqnt,e)
 print(calc_impedancias(1,bars,5, connections))
 harmonic = get_corrente(qntbars,Sb)
-#print(connections)
+
 harmonic_calc(harmonic,connections,qntbars,bars,vh)
 compartilha(y,bars,connections,harmonic,vh)
