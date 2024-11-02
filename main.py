@@ -277,8 +277,6 @@ def create_l(bars, Y):
                         L[i][j] = -(valor)
                     j+=1   
         b+=1  
-
-            
                 
     return L
 
