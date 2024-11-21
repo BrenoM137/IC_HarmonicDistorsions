@@ -2,6 +2,11 @@ import math
 import numpy as np
 import cmath
 
+from rich.align import Align
+from rich.console import Console
+from rich.table import Table
+from rich import box  
+
 def new_bar(matriz):
     #cria barras. [tipo de barra(0), capacitância(1), tensão(2), angulo(3), potência ativa(4), potência reativa(5), existe carga?(6),retância positiva(7), tensão base(8), strafo(9)]
     #tensão em p.u., ângulo em radianos, potência ativa e reativa em p.u.
@@ -498,12 +503,31 @@ def harmonic_calc(currents, connections, barsqnt,bars,vh):
         DTT[i][0] = (np.sqrt(DTT[i][0])*100)
     vh.append(v)
 
-    print("MEU VPAC: ",v[1])
-    print("DIT: \n",DIT,"\n")
-    print("DTT: \n",DTT,"\n")
+    #print(f'VPAC = {abs(v[1][0])*13800/math.sqrt(3.0)}∠{cmath.phase(v[1][0])*(180/math.pi) + 30}°')
+
+    #print("MEU VPAC: ",v[1])
+    table = Table(show_header=True, header_style="bold orange_red1", box=box.HEAVY, title="Distorções harmônicas individuais para h = 5", title_style="bold orange_red1")
+    table.add_column("Barra", justify="center")
+    table.add_column("Tensão harmônica (V)\nh = 5", justify="center")
+    table.add_column("DIT (h = 5)", justify="center")
+    for i in range(len(DTT)):
+        table.add_row(f'Barra {i + 1}', f'{abs(v[i][0])*(bars[i][8] * 1e3)/math.sqrt(3.0):.2f}∠{cmath.phase(v[i][0])*(180/math.pi) + 30:.2f}°', f'{DTT[i][0]:.2f}%')
+    table = Align.center(table)
+
+
+    #print("DIT: \n",DIT,"\n")
+    #print("DTT: \n",DTT,"\n")
+
+    print('\n')  
+    console.print(table)
+
     return DTT
 
 def calc_impedancias(PAC,bars,h,connections):
+
+    sBase = Sb * 1e6
+    vBase = bars[PAC][8] * 1e3
+    zBase = (vBase**2) / sBase
     impedancias = new_matriz(1,len(bars)-1)[0]
     fill = 0
     for i in range(len(bars)):
@@ -513,9 +537,10 @@ def calc_impedancias(PAC,bars,h,connections):
                     #print(c)
                     Rcon = connections[c][2]
                     Xcon = connections[c][3]*h
-                    print("Rcon, Xcon:",Rcon,Xcon)
+                    #print("Rcon, Xcon:",Rcon,Xcon)
             #Lcon = (Xcon)/(2*math.pi*60)
-            Zcon = complex(Rcon,Xcon)*((13800*13800)/10000000)
+            #Zcon = complex(Rcon,Xcon)*((13800*13800)/10000000)
+            Zcon = complex(Rcon,Xcon)*zBase
             impedancias[fill] = Zcon
             #print("Zcon = ",Zcon)
             fill += 1
@@ -524,13 +549,16 @@ def calc_impedancias(PAC,bars,h,connections):
                 #Zbase = (v*v)/(bars[i][9]*1000000)
                 #print("Zb[",i,"]",Zbase)
                 #Rind = ((bars[i][2]*bars[i][8]*1000)*(bars[i][2]*bars[i][8]*1000))/(bars[i][4]*1000000)
-                Rind = ((bars[i][2]*13800)*(bars[i][2]*13800))/(bars[i][4]*10000000)
+                #Rind = ((bars[i][2]*13800)*(bars[i][2]*13800))/(bars[i][4]*10000000)
+                Rind = ((bars[i][2]*vBase)*(bars[i][2]*vBase))/(bars[i][4]*sBase)
                 Rind = Rind*-1
                 #print("R[",i,"]",Rind)
-                Lind = ((bars[i][2]*13800)*(bars[i][2]*13800)*h)/(bars[i][5]*10000000)
+                #Lind = ((bars[i][2]*13800)*(bars[i][2]*13800)*h)/(bars[i][5]*10000000)
+                Lind = ((bars[i][2]*vBase)*(bars[i][2]*vBase)*h)/(bars[i][5]*sBase)
                 Lind = Lind*-1
                 #print("L[",i,"]",Lind)
-                Cind = ((bars[i][2]*13800)*(bars[i][2]*13800))/(bars[i][1]*10000000*h)
+                #Cind = ((bars[i][2]*13800)*(bars[i][2]*13800))/(bars[i][1]*10000000*h)
+                Cind = ((bars[i][2]*vBase)*(bars[i][2]*vBase))/(bars[i][1]*sBase*h)
                 #print("C[",i,"]",Cind)
                 #Rind_ = Rind*((bars[PAC][8]/bars[i][8])*(bars[PAC][8]/bars[i][8]))
                 #Lind_ = Lind*((bars[PAC][8]/bars[i][8])*(bars[PAC][8]/bars[i][8]))
@@ -540,7 +568,8 @@ def calc_impedancias(PAC,bars,h,connections):
                         Rtrafo = connections[c][2]
                         Xtrafo = connections[c][3]*h
 
-                Ztrafo = complex(Rtrafo,Xtrafo)*((13800*13800)/10000000)
+                #Ztrafo = complex(Rtrafo,Xtrafo)*((13800*13800)/10000000)
+                Ztrafo = complex(Rtrafo,Xtrafo)*zBase
                 #print("RL_par[",i,"]",RL_par)
                 Zind = Ztrafo + 1/(1/Rind + 1/(1j*Lind) + 1/(-1j*Cind))
                 #print("Zc[",i,"]",Zc)
@@ -548,12 +577,12 @@ def calc_impedancias(PAC,bars,h,connections):
                 #print("RL_C_par[",i,"]",RL_C_par)
                 #print("Z_ind[",i,"]",Z_ind)
                 impedancias[fill] = Zind
-                if(i == 2):
-                    print("Rind: ",Rind)
-                    print("Lind: ",Lind)
-                    print("Cind: ",Cind)
-                    print("Zind[",i,"]",Zind)
-                    print("V = ",(bars[i][2]*13800))
+                #if(i == 2):
+                #    print("Rind: ",Rind)
+                #    print("Lind: ",Lind)
+                #    print("Cind: ",Cind)
+                #    print("Zind[",i,"]",Zind)
+                #    print("V = ",(bars[i][2]*13800))
                 fill += 1
 
     return impedancias
@@ -585,81 +614,209 @@ def defasar_30(z):
     return cmath.rect(abs(z),cmath.phase(z) + (30*(cmath.pi/180)))
 
 def compartilha(y,bars, connections, currents, vh):
-    c = int(input("Insira a barra consumidora: "))-1
-    for count in range(len(y[c])):
-        if y[c][count] != 0 and count != c:
-            PAC = count
-    zsh = 0
-    zch = 0
-    impedancias = calc_impedancias(PAC,bars,5,connections)
+    #console = Console()
 
-    #improviso
-    #impedancias = (cmath.rect(5.9478,(89.5998*(math.pi/180))),cmath.rect(62.5424,(-4.3393*(math.pi/180))),cmath.rect(51.2691,(-4.9947*(math.pi/180))),cmath.rect(83.2596,(-21.6006*(math.pi/180))))
-    print(impedancias)
-    flag = 0
-    # i = 0 flag = 0: zsh += 1/impedancias[0] flag = 1
-    # i = 1 flag = 1: i = 2
-    # i = 2 flag = 1: zch = impedancias[1] flag = 2
-    # i = 3 flag = 2: zsh += 1/impedancias[2] flag = 3
-    # i = 4 flag = 3: zsh += 1/impedancias[3] flag = 4
-    for i in range(len(bars)):
-        #print("i, flag: ",i,flag)
-        if(i != PAC and i != c):
-            print("Flag, impedância",flag,impedancias[flag])
-            zsh += 1/impedancias[flag]
-            flag += 1
-        else:
-            if (i == c):
-                zch = impedancias[flag]
+    vpac = 0
+    iCon = 0
+    iInd = []
+    zCon = 0
+    zInd = []
+    vc_pac = []
+    vs_pac = []
+    vc_proj = []
+    vs_proj = []
+    resp = []
+
+    cVec = []
+    cVec = [int(item) for item in input("Insira a barra consumidora: ").split()]
+    cVec = [x-1 for x in cVec]
+    for c in cVec:
+        for count in range(len(y[c])):
+            if y[c][count] != 0 and count != c:
+                PAC = count
+        zsh = 0
+        zch = 0
+        impedancias = calc_impedancias(PAC,bars,5,connections)
+        zCon = impedancias[0]
+        zInd.append(impedancias[c - 1])
+
+        #improviso
+        #impedancias = (cmath.rect(5.9478,(89.5998*(math.pi/180))),cmath.rect(62.5424,(-4.3393*(math.pi/180))),cmath.rect(51.2691,(-4.9947*(math.pi/180))),cmath.rect(83.2596,(-21.6006*(math.pi/180))))
+        #print(impedancias)
+        #for i in range(len(impedancias)):
+        #    print(f'Z{i} = {abs(impedancias[i])}∠{cmath.phase(impedancias[i])*(180/math.pi)}°')
+
+        #vPAC = vh[0][PAC][0]
+        #print(f'VPAC = {abs(vPAC)}∠{cmath.phase(vPAC)*(180/math.pi)}°')
+        #j = 0
+        #for i in range(len(vh[0])):
+        #    if i != PAC:
+        #        vBus = vh[0][i][0]
+        #        print(f'V{i} = {abs(vBus)}∠{cmath.phase(vBus)*(180/math.pi)}°')
+        #        zBranch = calc_impedancias_trans(PAC, i ,connections, 5)[0]
+        #        iInj = ((vPAC - vBus) / zBranch) * (10e6 / (math.sqrt(3) * 13800))
+        #        print(f'I{i} = {abs(iInj)}∠{cmath.phase(iInj)*(180/math.pi)}°')
+        #        j += 1
+
+        flag = 0
+        # i = 0 flag = 0: zsh += 1/impedancias[0] flag = 1
+        # i = 1 flag = 1: i = 2
+        # i = 2 flag = 1: zch = impedancias[1] flag = 2
+        # i = 3 flag = 2: zsh += 1/impedancias[2] flag = 3
+        # i = 4 flag = 3: zsh += 1/impedancias[3] flag = 4
+        for i in range(len(bars)):
+            #print("i, flag: ",i,flag)
+            if(i != PAC and i != c):
+                #print("Flag, impedância",flag,impedancias[flag])
+                zsh += 1/impedancias[flag]
                 flag += 1
+            else:
+                if (i == c):
+                    zch = impedancias[flag]
+                    flag += 1
+        
+        #print("Zch: ",abs(zch))
+        zsh = 1/zsh
+
+        #print("Zsh: ",abs(zsh))
+        #print("Zch 19.044: ",abs(zch)*19.044)
+
+        #trocar 0 para h no final
+        #print("vh[0][PAC]:",vh[0][PAC])
+        #print("vh[0][c]:",vh[0][c])
+
+        #vc = complex(vh[0][c].real*-1,vh[0][c].imag)
+        #vpac =  0.00501242+0.032241j
+        vpac = vh[0][PAC][0]
+        vc = vh[0][c][0]
+
+
+        ipac = ((vpac - ((vc)))/calc_impedancias_trans(PAC, c ,connections, 5)[0])
+
+        iCon = ((vpac - ((vh[0][0][0])))/calc_impedancias_trans(PAC, 0 ,connections, 5)[0])
+        
+        vpac = vpac * bars[PAC][8] * 1e3 / cmath.rect(math.sqrt(3), -30*(math.pi/180)) # Em volts, seq negativa
+        #print(f'VPAC = {abs(vpac)}∠{cmath.phase(vpac)*(180/math.pi)}°')
+
+        ipac = ipac * (Sb * 1e6 / (math.sqrt(3) * bars[PAC][8] * 1e3)) # Em A
+        ipac = defasar_30(ipac) # Trafo delta-estrela
+        #print(f'I{c+1}-PAC = {abs(ipac)}∠{cmath.phase(ipac)*(180/math.pi)}°')
+        iInd.append(ipac)
+
+        
+        iCon = iCon * (Sb * 1e6 / (math.sqrt(3) * bars[PAC][8] * 1e3)) # Em A
+        iCon = defasar_30(iCon)
+        
+        #ipac = defasar_30(ipac)
+        #vpac = defasar_30(vpac)
+        #vpac = vpac/math.sqrt(3)
+        #vpac = (cmath.rect(264.2867,(128.3914*(math.pi/180))))
+        ish = (((vpac)/zsh) + ipac)
+        ich = (((vpac)/zch) - ipac)
+
+        vspach = ((zsh*zch)/(zsh+zch))*ish
+
+        vcpach = ((zsh*zch)/(zsh+zch))*ich
+
+        vs_pac.append(vspach)
+        vc_pac.append(vcpach)
+
+        #print("ish: ",abs(ish),cmath.phase(ish)*(180/math.pi) ," -> ",ish)
+        #print("ich: ",abs(ich),cmath.phase(ich)*(180/math.pi)," -> ",ich)
+        #print("ipac: ",abs(ipac),cmath.phase(ipac)*(180/math.pi)," -> ",ipac)
+        #print("zsh: ",abs(zsh),cmath.phase(zsh)*(180/math.pi)," -> ",zsh)
+        #print("zch: ",abs(zch),cmath.phase(zch)*(180/math.pi)," -> ",zch)
+        #print("Vspah:",abs(vspach),cmath.phase(vspach)*(180/math.pi)," -> ",vspach)
+        #print("Vcpah:",abs(vcpach),cmath.phase(vcpach)*(180/math.pi)," -> ",vcpach)
+        #
+        #print("Vpac:",abs(vpac),cmath.phase(vpac)*(180/math.pi)," -> ",vpac)
+
+        vs_projC = projection_complex(vspach,vpac)
+        vs_projC = abs(vs_projC)
+        vc_projC = projection_complex(vcpach,vpac)
+        vc_projC =  abs(vc_projC) * math.cos(cmath.phase(vc_projC) - cmath.phase(vpac)) # Considerar sinal da projeção
+
+        vs_proj.append(vs_projC)
+        vc_proj.append(vc_projC)
+        #print("\nVs_proj:",abs(vs_proj))
+        #print("\nVc_proj:",abs(vc_proj))
+        #print(f'\nVc_proj = {abs(vc_proj)}∠{cmath.phase(vc_proj)*(180/math.pi)}°')
+        #print(f'\nVs_projABS2 = {vc_proj}')
+
+        respC = []
+        respC.append((abs(vc_projC)/abs(vpac))*100) # Método 1
+        respC.append((vc_projC/abs(vpac))*100) # Método 2
+        respC.append(0.0) # Método 3, sendo necessário calcular todos os valores de vc_proj para obter o resultado final
+        resp.append(respC)
+
+    # Método 3
+    for i in range(len(resp)):
+        sumVcProj = 0
+        for vcProjx in vc_proj:
+            sumVcProj += abs(vcProjx)
+        resp[i][2] = (abs(vc_proj[i])/sumVcProj)*100
+
+    total = [0, 0, 0]
+    for i in range(len(resp)):
+        total[0] += resp[i][0]
+        total[1] += resp[i][1]
+        total[2] += resp[i][2]
+
+    table1 = Table(show_header=True, header_style="bold orange1", box=box.HEAVY, title="Grandezas elétricas constatadas no PAC - análise para h = 5", title_style="bold orange1")
+    table1.add_column("Grandeza\nordem h = 5", justify="center")
+    table1.add_column("Valores", justify="center")
+    table1.add_row(f'V_pac-h (V)', f'{abs(vpac):.2f}∠{cmath.phase(vpac)*(180/math.pi):.2f}°')
+    table1.add_row(f'I_con-h (A)', f'{abs(iCon):.2f}∠{cmath.phase(iCon)*(180/math.pi):.2f}°')
+    for i in range(len(iInd)):
+        table1.add_row(f'I_ind{i + 1}-h (A)', f'{abs(iInd[i]):.2f}∠{cmath.phase(iInd[i])*(180/math.pi):.2f}°')
+    table1 = Align.center(table1)
+
+    table2 = Table(show_header=True, header_style="bold blue", box=box.HEAVY, title="Impedâncias harmônicas das partes do sistema - análise para h = 5", title_style="bold blue")
+    table2.add_column("Grandeza\nordem h = 5", justify="center")
+    table2.add_column("Valor de\nimpedância (Ω)", justify="center")
+    table2.add_row(f'Z_con-h', f'{abs(zCon):.2f}∠{cmath.phase(zCon)*(180/math.pi):.2f}°')
+    for i in range(len(zInd)):
+        table2.add_row(f'Z_ind{i + 1}-h', f'{abs(zInd[i]):.2f}∠{cmath.phase(zInd[i])*(180/math.pi):.2f}°')
+    table2 = Align.center(table2)
+
+    table3 = Table(show_header=True, header_style="bold green", box=box.HEAVY, title="Fasores de contribuição individual de tensão em cada análise de compartilhamento", title_style="bold green")
+    table3.add_column("Compartilhamento\ninvestigado", justify="center")
+    table3.add_column("Vs-proj-h (V)", justify="center")
+    table3.add_column("Vc-proj-h (V)", justify="center")
+    for i in range(len(vs_pac)):
+        table3.add_row(f'Indústria {i + 1}', f'{abs(vs_pac[i]):.2f}∠{cmath.phase(vs_pac[i])*(180/math.pi):.2f}°', f'{abs(vc_pac[i]):.2f}∠{cmath.phase(vc_pac[i])*(180/math.pi):.2f}°')
+    table3 = Align.center(table3)
+
+    table4 = Table(show_header=True, header_style="bold red", box=box.HEAVY, title="Projeções escalares dos fasores de contribuição individual de cada parte", title_style="bold red")
+    table4.add_column("Compartilhamento\ninvestigado", justify="center")
+    table4.add_column("Vs-proj-h (V)", justify="center")
+    table4.add_column("Vc-proj-h (V)", justify="center")
+    for i in range(len(vs_proj)):
+        table4.add_row(f'Indústria {i + 1}', f'{vs_proj[i]:.2f}', f'{vc_proj[i]:.2f}')
+    table4 = Align.center(table4)
     
-    print("Zch: ",abs(zch))
-    zsh = 1/zsh
+    table5 = Table(show_header=True, show_footer=True, header_style="bold magenta", box=box.HEAVY, title="Percentuais de responsabilidades cabidos às indústrias", title_style="bold magenta")
+    table5.add_column("Compartilhamento\ninvestigado", justify="center", footer="TOTAL")
+    table5.add_column("Responsabilidade\nMétodo 1", justify="center", footer=f'{total[0]:.2f}%')
+    table5.add_column("Responsabilidade\nMétodo 2", justify="center", footer=f'{total[1]:.2f}%')
+    table5.add_column("Responsabilidade\nMétodo 3", justify="center", footer=f'{total[2]:.2f}%')
+    for i in range(len(resp)):
+        table5.add_row(f'Indústria {i + 1}', f'{resp[i][0]:.2f}%', f'{resp[i][1]:.2f}%', f'{resp[i][2]:.2f}%')
+    table5 = Align.center(table5)
 
-    print("Zsh: ",abs(zsh))
-    print("Zch 19.044: ",abs(zch)*19.044)
-
-    #trocar 0 para h no final
-    print("vh[0][PAC]:",vh[0][PAC])
-    print("vh[0][c]:",vh[0][c])
-
-    vc = complex(vh[0][c].real*-1,vh[0][c].imag)
-    vpac =  0.00501242+0.032241j
-
-    ipac = ((vpac - ((vc)))/calc_impedancias_trans(PAC, c ,connections, 5)[0])
-    ipac = ipac*418.3698
-
-    vpac = (vpac * 13800)
-    
-    ipac = defasar_30(ipac)
-    vpac = defasar_30(vpac)
-    vpac = vpac/math.sqrt(3)
-    vpac = (cmath.rect(264.2867,(128.3914*(math.pi/180))))
-    ish = (((vpac)/zsh) + ipac)
-    ich = (((vpac)/zch) - ipac)
-
-    vspach = ((zsh*zch)/(zsh+zch))*ish
-
-    vcpach = ((zsh*zch)/(zsh+zch))*ich
-    print("ish: ",abs(ish),cmath.phase(ish)*(180/math.pi) ," -> ",ish)
-    print("ich: ",abs(ich),cmath.phase(ich)*(180/math.pi)," -> ",ich)
-    print("ipac: ",abs(ipac),cmath.phase(ipac)*(180/math.pi)," -> ",ipac)
-    print("zsh: ",abs(zsh),cmath.phase(zsh)*(180/math.pi)," -> ",zsh)
-    print("zch: ",abs(zch),cmath.phase(zch)*(180/math.pi)," -> ",zch)
-    print("Vspah:",abs(vspach),cmath.phase(vspach)*(180/math.pi)," -> ",vspach)
-    print("Vcpah:",abs(vcpach),cmath.phase(vcpach)*(180/math.pi)," -> ",vcpach)
-    
-    print("Vpac:",abs(vpac),cmath.phase(vpac)*(180/math.pi)," -> ",vpac)
-    vs_proj = projection_complex(vspach,vpac)
-    vc_proj = projection_complex(vcpach,vpac)
-    print("\nVs_proj:",abs(vs_proj))
-    print("\nVc_proj:",abs(vc_proj))
-
-    print("\nResp. Sitema:",(abs(vs_proj)/abs(vpac))*100)
-    print("\nResp. Barra",c+1,":",(abs(vc_proj)/abs(vpac))*100)
-    
-    
+    print('\n') 
+    console.print(table1)
+    print('\n') 
+    console.print(table2)
+    print('\n') 
+    console.print(table3)
+    print('\n') 
+    console.print(table4)
+    print('\n')    
+    console.print(table5)
 #CÓDIGO
+
+console = Console()
 
 Sb = float(input("Insira a base de potência: "))
 qntbars = int(input("Insira a quantidade de barras: "))
